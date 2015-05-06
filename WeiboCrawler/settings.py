@@ -12,6 +12,13 @@ BOT_NAME = 'WeiboCrawler'
 
 SPIDER_MODULES = ['WeiboCrawler.spiders']
 NEWSPIDER_MODULE = 'WeiboCrawler.spiders'
+LOG_LEVEL = 'DEBUG'
+LOG_FILE = 'DEBUG.log'
+DOWNLOAD_DELAY = 1.5
+
+ITEM_PIPELINES = {
+    'WeiboCrawler.pipelines.WeiboCrawlerPipeline': 300
+}
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'WeiboCrawler (+http://www.yourdomain.com)'

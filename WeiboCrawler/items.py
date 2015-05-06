@@ -8,7 +8,11 @@
 import scrapy
 
 
-class WeibocrawlerItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+class WeiboItem(scrapy.Item):
+    mid = scrapy.Field()
+    uid = scrapy.Field()
+    content = scrapy.Field()
+    tm = scrapy.Field()
+    repost_num = scrapy.Field()
+    comment_num = scrapy.Field()
+    like_num = scrapy.Field()
