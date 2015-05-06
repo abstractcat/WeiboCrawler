@@ -7,7 +7,6 @@
 
 import scrapy
 
-
 class WeiboItem(scrapy.Item):
     mid = scrapy.Field()
     uid = scrapy.Field()

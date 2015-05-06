@@ -10,9 +10,10 @@ import base64
 import re
 import hashlib
 import json
-import rsa
 import binascii
 import time
+
+import rsa
 
 
 def get_prelogin_status(username):
