@@ -2,13 +2,12 @@
 
 __author__ = 'abstractcat'
 
+import cookielib
+import json
+
 from scrapy.spider import Spider
 from scrapy.http import Request
 from scrapy import Selector
-
-import cookielib
-import pdb
-import json
 
 from WeiboCrawler.login import login
 
