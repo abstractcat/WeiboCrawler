@@ -62,3 +62,4 @@ WITH (
 );
 ALTER TABLE weibo
   OWNER TO postgres;
+
