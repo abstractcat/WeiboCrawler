@@ -17,13 +17,13 @@ from WeiboCrawler.login import login
 
 
 class WeiboSpider(Spider):
-    name = "weibo"
-    allowed_domains = ['weibo.com', 'sina.com.cn']
-
     def __init__(self, pid, start, end):
         self.pid = pid
         self.start = start
         self.end = end
+
+    name = "weibo"
+    allowed_domains = ['weibo.com', 'sina.com.cn']
 
     def start_requests(self):
         '''
