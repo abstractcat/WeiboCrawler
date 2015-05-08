@@ -17,6 +17,9 @@ from WeiboCrawler.login import login
 
 
 class WeiboSpider(Spider):
+    '''
+    Crawl weibo list for user given pid and time range.
+    '''
     name = "weibo"
     allowed_domains = ['weibo.com', 'sina.com.cn']
 
