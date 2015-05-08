@@ -14,6 +14,7 @@ SPIDER_MODULES = ['WeiboCrawler.spiders']
 NEWSPIDER_MODULE = 'WeiboCrawler.spiders'
 LOG_LEVEL = 'DEBUG'
 LOG_FILE = 'DEBUG.log'
+
 DOWNLOAD_DELAY = 1.5
 
 ITEM_PIPELINES = {

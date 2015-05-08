@@ -8,16 +8,16 @@ class PostgresConn():
     def __init__(self):
         self.conn = psycopg2.connect("dbname=weibo user=postgres host=localhost")
 
-    def execute(self, sql, data):
+    def execute_param(self, sql, param):
         """
-        Execute insert or update statements with parameters.
+        Execute statements with parameters.
         :param sql:
-        :param data:
+        :param param:
         :return:
         """
         cur = self.conn.cursor()
         try:
-            cur.execute(sql, data)
+            cur.execute(sql, param)
             self.conn.commit()
         except Exception as e:
             print(e)
@@ -25,19 +25,16 @@ class PostgresConn():
         finally:
             cur.close()
 
-    def query(self,sql, data):
+    def execute(self, sql):
         """
-        Execute query with parameters.
+        Execute statements without parameters.
         :param sql:
-        :param data:
         :return:
         """
         cur = self.conn.cursor()
         try:
-            cur.execute(sql, data)
-            rows = cur.fetchall()
-            cur.close()
-            return rows
+            cur.execute(sql)
+            self.conn.commit()
         except Exception as e:
             print(e)
             self.conn.rollback()

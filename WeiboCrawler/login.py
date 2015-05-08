@@ -179,12 +179,12 @@ def get_user(username):
     return username
 
 
-if __name__ == '__main__':
-    username = 'data4paper@sina.com'
-    pwd = 'cikm2015'
-    cookie_file = '../weibo_login_cookies.dat'
-
-    if login(username, pwd, cookie_file):
-        print('Login WEIBO succeeded')
-    else:
-        print('Login WEIBO failed')
+# if __name__ == '__main__':
+# username = 'data6paper@sina.com'
+#     pwd = 'cikm2015'
+#     cookie_file = '../weibo_login_cookies.dat'
+#
+#     if login(username, pwd, cookie_file):
+#         print('Login WEIBO succeeded')
+#     else:
+#         print('Login WEIBO failed')

@@ -5,7 +5,6 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 
-import datetime
 from WeiboCrawler.postgres import PostgresConn
 
 class WeiboCrawlerPipeline(object):
@@ -21,9 +20,9 @@ class WeiboCrawlerPipeline(object):
         mid=item['mid']
         uid=item['uid']
         content=item['content']
-        tm=datetime.datetime.fromtimestamp(long(item['tm'])/1000)
-        repost_num=int(item['repost_num'])
-        comment_num=int(item['comment_num'])
-        like_num=int(item['like_num'])
-        self.db.execute(sql,(mid,uid,content,tm,repost_num,repost_num,comment_num,like_num))
+        tm = item['tm']
+        repost_num = item['repost_num']
+        comment_num = item['comment_num']
+        like_num = item['like_num']
+        self.db.execute(sql, (mid, uid, content, tm, repost_num, comment_num, like_num))
 
