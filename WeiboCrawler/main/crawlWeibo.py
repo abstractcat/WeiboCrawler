@@ -11,7 +11,7 @@ from WeiboCrawler.spiders.weiboSpider import WeiboSpider
 
 
 def main():
-    spider = WeiboSpider(pid='1005051788911247', start='2015-03-01', end='2015-03-31')
+    spider = WeiboSpider(pid='1005053121700831', start='2015-03-01', end='2015-03-31')
 
     settings = get_project_settings()
     crawler = Crawler(settings)

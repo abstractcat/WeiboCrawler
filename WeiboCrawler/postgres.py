@@ -4,6 +4,7 @@ __author__ = 'abstractcat'
 
 import psycopg2
 
+
 class PostgresConn():
     def __init__(self):
         self.conn = psycopg2.connect("dbname=weibo user=postgres host=localhost")
@@ -41,7 +42,7 @@ class PostgresConn():
         finally:
             cur.close()
 
-    def query(self,sql):
+    def query(self, sql):
         """
         Execute query without parameters.
         :param sql:
