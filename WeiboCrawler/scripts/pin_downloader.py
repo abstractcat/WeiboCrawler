@@ -1,22 +1,8 @@
 #!/usr/bin/env python
 #coding=utf8
 
-import os
-import sys
-import urllib
 import urllib2
-import cookielib
-import base64
-import re
-import hashlib
-import json
-import rsa
-import binascii
-import time
-import random
 import cStringIO
-import numpy
-import matplotlib.pyplot as plt
 from PIL import Image
 
 if __name__ == '__main__':
