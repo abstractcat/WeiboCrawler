@@ -20,12 +20,14 @@ from PIL import Image
 
 
 def request_url(url):
-    try:
-        data = urllib2.urlopen(url,timeout=3).read()
-        return data
-    except Exception as e:
-        print(e)
-        sys.exit(1)
+    #try serval times
+    for i in range(0,2):
+        try:
+            data = urllib2.urlopen(url,timeout=5).read()
+            return data
+        except Exception as e:
+            print(e)
+    sys.exit(1)
 
 
 def get_prelogin_status(username):
@@ -239,10 +241,9 @@ if __name__ == '__main__':
 
     username = 'mcnbtoses0@chacuo.net'
     pwd = 'gtxmxmz65194'
-
     cookie_file = 'cookies/test_cookie.dat'
-    proxy='111.161.126.99:80'
-    proxy = None
+    proxy='117.177.111.1:80'
+
     if login(username, pwd, cookie_file, proxy):
         print 'Login WEIBO succeeded'
         test_page = urllib2.urlopen('http://weibo.com/u/2891529877?from=feed&loc=nickname').read()
