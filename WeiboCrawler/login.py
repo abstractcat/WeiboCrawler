@@ -15,8 +15,7 @@ import binascii
 import time
 import random
 import cStringIO
-import numpy
-import matplotlib.pyplot as plt
+
 from PIL import Image
 
 def get_prelogin_status(username):
