@@ -10,8 +10,18 @@ from scrapy.utils.project import get_project_settings
 from WeiboCrawler.spiders.weiboSpider import WeiboSpider
 
 
+def read_user_list(path):
+    userid=[]
+    f=open(path)
+    for line in f:
+        userid.append(line.strip())
+    print(userid)
+    return userid
+
 def main():
-    spider = WeiboSpider(pid='1005051788911247', start='2015-03-01', end='2015-03-31')
+    userid=read_user_list('../script/user_500.txt')
+
+    spider = WeiboSpider(pid='1006062786930387', start='2015-03-01', end='2015-03-31')
 
     settings = get_project_settings()
     crawler = Crawler(settings)

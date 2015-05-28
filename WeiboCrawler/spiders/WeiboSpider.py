@@ -122,8 +122,14 @@ def parse_mblog_div(div):
     uid = uid.split('=')[1]
     content = re.match(r'<div.*?>(.*)</div>', content.replace('\n', '')).group(1).strip()
     tm = datetime.fromtimestamp(long(tm) / 1000)
-    repost_num = int(repost_num.split(' ')[-1])
-    comment_num = int(comment_num.split(' ')[-1])
+    try:
+        repost_num = int(repost_num.split(' ')[-1])
+    except:
+        repost_num = 0
+    try:
+        comment_num = int(comment_num.split(' ')[-1])
+    except:
+        comment_num = 0
     like_num = int(like_num)
 
     return (mid, uid, content, tm, repost_num, comment_num, like_num)
