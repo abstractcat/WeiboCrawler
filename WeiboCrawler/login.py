@@ -168,26 +168,27 @@ def do_login(username, pwd, cookie_file, proxy_address):
     text = result.decode('gbk')
     print('data received:' + text)
     p = re.compile('\'login\',function\(\)\{location\.replace\(\'(.*?)\'\)')
+
+    #Search login redirection URL
     try:
-        #Search login redirection URL
         login_url = p.search(text).group(1)
+    except:
+        print('login redirection URL not found')
+        return 0
 
-        print('login_url:' + login_url)
-        data = request_url(login_url)
-        print('received data:' + data)
-        #Verify login feedback, check whether result is TRUE
-        patt_feedback = 'parent.sinaSSOController.feedBackUrlCallBack\((.*?)\)'
-        p = re.compile(patt_feedback, re.MULTILINE)
+    print('login_url:' + login_url)
+    data = request_url(login_url)
+    print('received data:' + data)
+    #Verify login feedback, check whether result is TRUE
+    patt_feedback = 'parent.sinaSSOController.feedBackUrlCallBack\((.*?)\)'
+    p = re.compile(patt_feedback, re.MULTILINE)
 
-        feedback = p.search(data).group(1)
-        feedback_json = json.loads(feedback)
-        if feedback_json['result']:
-            cookie_jar2.save(cookie_file, ignore_discard=True, ignore_expires=True)
-            return 1
-        else:
-            return 0
-    except Exception as e:
-        print(e)
+    feedback = p.search(data).group(1)
+    feedback_json = json.loads(feedback)
+    if feedback_json['result']:
+        cookie_jar2.save(cookie_file, ignore_discard=True, ignore_expires=True)
+        return 1
+    else:
         return 0
 
 
@@ -243,6 +244,7 @@ if __name__ == '__main__':
     pwd = 'gtxmxmz65194'
     cookie_file = 'cookies/test_cookie.dat'
     proxy='117.177.111.1:80'
+    #proxy=None
 
     if login(username, pwd, cookie_file, proxy):
         print 'Login WEIBO succeeded'
