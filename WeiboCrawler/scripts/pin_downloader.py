@@ -30,8 +30,8 @@ def download(i):
 
 def preprocess(i):
     img = io.imread('../pics/'+str(i)+'.png')
-    solver=CaptchaSolver(img)
-    grey_img=solver.preprocess()
+    solver=CaptchaSolver()
+    grey_img=solver.preprocess(img)
     io.imsave('../grey/'+str(i)+'.png',grey_img)
     print(grey_img.shape)
     fig, ax = plt.subplots()
@@ -50,6 +50,6 @@ def preprocess(i):
     plt.show()
 
 if __name__ == '__main__':
-    for i in range(72,73):
+    for i in range(2000,2001):
         download(i)
         preprocess(i)
