@@ -9,7 +9,7 @@ class CaptchaSolver():
     def __init__(self,img):
         self.img=rgb2gray(img)
 
-    def segment(self):
+    def preprocess(self):
         (M,N)=self.img.shape
         vertical_count=[0 for i in range(N)]
         horizonal_count=[0 for i in range(M)]
@@ -34,15 +34,26 @@ class CaptchaSolver():
         #get the image without margin
         img=self.img[bottom:top]
         img=np.array(map(lambda x:x[left:right],img))
-        img=imresize(img,(M,N))
-        plt.imshow(img,cmap=plt.cm.gray)
-        plt.show()
+        img=imresize(img,(26,78))
+        return img
+
+    def train_splitter(self,X,Y):
+        pass
 
 
+def load_split_train_data(n):
+    X=[]
+    for i in range(n):
+        img = io.imread('../grey/'+str(i)+'.png')
+        x=np.reshape(img,img.size)
+        X.append(x)
+
+    f=open('../scripts/split.txt')
+    Y=f.readlines()[:n]
+    Y=map(lambda x:float(x.split('\t')[1]),Y)
+    f.close()
+
+    return (X,Y)
 
 if __name__=='__main__':
-    for i in range(0,100):
-        filename='../pics/%s.png'%i
-        img = io.imread(filename)
-        solver=CaptchaSolver(img)
-        solver.segment()
+    load_split_train_data(100)
