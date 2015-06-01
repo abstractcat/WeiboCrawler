@@ -50,6 +50,6 @@ def preprocess(i):
     plt.show()
 
 if __name__ == '__main__':
-    for i in range(2000,2001):
+    for i in range(1000,1050):
         download(i)
         preprocess(i)
