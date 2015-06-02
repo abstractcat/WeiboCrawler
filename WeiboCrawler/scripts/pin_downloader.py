@@ -33,6 +33,7 @@ def preprocess(i):
     solver=CaptchaSolver()
     grey_img=solver.preprocess(img)
     io.imsave('../grey/'+str(i)+'.png',grey_img)
+    img.save('../tif/'+str(i)+'.tif')
     print(grey_img.shape)
     fig, ax = plt.subplots()
     cursor = Cursor(ax)
@@ -40,16 +41,31 @@ def preprocess(i):
     plt.connect('motion_notify_event', cursor.mouse_move)
     plt.imshow(grey_img,cmap=plt.cm.gray)
 
+    global count
+    global xs
+    count=0
+    xs=[]
     def onclick(event):
-        f=open('split.txt','a')
         print(event.xdata)
-        f.write(str(i)+'\t'+str(event.xdata)+'\n')
-        f.close()
-        plt.close()
+        xs.append(event.xdata)
+        count+=1
+        if count>=4:
+            print(xs)
+            xs_str=map(lambda x:str(x),xs)
+            f=open('split.txt','a')
+            f.write(str(i)+'\t'+'\t'.join(xs_str)+'\n')
+            f.close()
+            plt.close()
+            global count
+            global xs
+            count=0
+            xs=[]
+
     cid = fig.canvas.mpl_connect('button_press_event', onclick)
     plt.show()
 
 if __name__ == '__main__':
-    for i in range(1000,1050):
+    from PIL import Image
+    for i in range(2000,2000):
         download(i)
         preprocess(i)

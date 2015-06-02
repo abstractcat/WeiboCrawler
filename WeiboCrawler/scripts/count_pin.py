@@ -1,12 +1,11 @@
 __author__ = 'chi'
 
 def main():
-    f=open('pin_300.txt')
+    f=open('pin.txt')
     lines=f.readlines()
     f.close()
     lines=map(lambda x:x.split('\t'),lines)
-    pins=map(lambda x:x[0],lines)
-    letters=map(lambda x:x[1].strip().lower(),lines)
+    letters=map(lambda x:x[1].strip(),lines)
 
     ld=dict()
     for letter in letters:
