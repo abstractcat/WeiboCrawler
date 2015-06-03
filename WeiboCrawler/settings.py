@@ -13,7 +13,7 @@ BOT_NAME = 'WeiboCrawler'
 SPIDER_MODULES = ['WeiboCrawler.spiders']
 NEWSPIDER_MODULE = 'WeiboCrawler.spiders'
 LOG_LEVEL = 'DEBUG'
-LOG_FILE = 'DEBUG.log'
+#LOG_FILE = 'DEBUG.log'
 
 DOWNLOAD_DELAY = 1
 

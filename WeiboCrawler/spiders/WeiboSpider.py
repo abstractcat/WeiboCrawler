@@ -11,9 +11,7 @@ from scrapy.spider import Spider
 from scrapy.http import Request
 from scrapy import Selector
 
-from WeiboCrawler import constants
 from WeiboCrawler.items import WeiboItem
-from WeiboCrawler.login import login
 
 
 class WeiboSpider(Spider):
@@ -33,12 +31,6 @@ class WeiboSpider(Spider):
         Login and crawl weibo for user pid and time range.
         :return:
         '''
-        if login(constants.name, constants.pwd, constants.cookie):
-            self.login_cookie = read_cookie(constants.cookie)
-            print('Login Succeed.')
-        else:
-            print('Login Failed.')
-            return
 
         page = 1
         section = 1

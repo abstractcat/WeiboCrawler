@@ -11,9 +11,7 @@ from scrapy.spider import Spider
 from scrapy.http import Request
 from scrapy import Selector
 
-from WeiboCrawler import constants
 from WeiboCrawler.items import WeiboItem
-from WeiboCrawler.login import login
 from WeiboCrawler.items import RepostItem
 
 
@@ -29,12 +27,6 @@ class RepostSpider(Spider):
         Login and crawl repost for weibo given mid.
         :return:
         '''
-        if login(constants.name, constants.pwd, constants.cookie):
-            self.login_cookie = read_cookie(constants.cookie)
-            print('Login Succeed.')
-        else:
-            print('Login Failed.')
-            return
 
         page = 1
         crawled = 0

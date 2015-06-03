@@ -4,22 +4,9 @@
 import urllib2
 import cStringIO
 from PIL import Image
-from WeiboCrawler.captcha.solver import CaptchaSolver
+from skimage.color import rgb2gray
 from skimage import io
 import matplotlib.pyplot as plt
-
-class Cursor:
-    def __init__(self, ax):
-        self.ax = ax
-        self.ly = ax.axvline(color='k')  # the vert line
-
-    def mouse_move(self, event):
-        if not event.inaxes: return
-
-        x, y = event.xdata, event.ydata
-        # update the line positions
-        self.ly.set_xdata(x )
-        plt.draw()
 
 def download(i):
     url="http://login.sina.com.cn/cgi/pin.php?s=02271679&p=xd-e174b0d9f37780767be2f700faf79bfac60d"
@@ -30,42 +17,12 @@ def download(i):
 
 def preprocess(i):
     img = io.imread('../pics/'+str(i)+'.png')
-    solver=CaptchaSolver()
-    grey_img=solver.preprocess(img)
+    grey_img = rgb2gray(img)
     io.imsave('../grey/'+str(i)+'.png',grey_img)
-    img.save('../tif/'+str(i)+'.tif')
-    print(grey_img.shape)
-    fig, ax = plt.subplots()
-    cursor = Cursor(ax)
-    #cursor = SnaptoCursor(ax, t, s)
-    plt.connect('motion_notify_event', cursor.mouse_move)
-    plt.imshow(grey_img,cmap=plt.cm.gray)
-
-    global count
-    global xs
-    count=0
-    xs=[]
-    def onclick(event):
-        print(event.xdata)
-        xs.append(event.xdata)
-        count+=1
-        if count>=4:
-            print(xs)
-            xs_str=map(lambda x:str(x),xs)
-            f=open('split.txt','a')
-            f.write(str(i)+'\t'+'\t'.join(xs_str)+'\n')
-            f.close()
-            plt.close()
-            global count
-            global xs
-            count=0
-            xs=[]
-
-    cid = fig.canvas.mpl_connect('button_press_event', onclick)
-    plt.show()
+    #plt.imshow(grey_img,cmap=plt.cm.gray)
+    #plt.show()
 
 if __name__ == '__main__':
-    from PIL import Image
-    for i in range(2000,2000):
-        download(i)
+    for i in range(0,1050):
+        #download(i)
         preprocess(i)
