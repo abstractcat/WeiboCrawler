@@ -2,15 +2,18 @@
 
 __author__ = 'abstractcat'
 
-import cookielib
 import json
 import re
 from datetime import datetime
 
 from scrapy.spider import Spider
+
 from scrapy.http import Request
+
 from scrapy import Selector
 
+from abstractcat.db import postgres
+from abstractcat.login import entry
 from WeiboCrawler.items import WeiboItem
 
 
@@ -21,10 +24,12 @@ class WeiboSpider(Spider):
     name = "weibo"
     allowed_domains = ['weibo.com', 'sina.com.cn']
 
-    def __init__(self, pid, start, end):
-        self.pid = pid
+    def __init__(self, uid_list, start, end):
+        self.db = postgres.PostgresConn()
+        self.uid_list = uid_list
         self.start = start
         self.end = end
+        self.entry_manager = entry.EntryManager()
 
     def start_requests(self):
         '''
@@ -32,72 +37,85 @@ class WeiboSpider(Spider):
         :return:
         '''
 
-        page = 1
-        section = 1
-        crawled = 0
-        params = {'pid': self.pid, 'start': self.start, 'end': self.end, 'page': page, 'section': section,
-                  'crawled': crawled}
-        mblog_list_url = get_mbloglist_url(self.pid, self.start, self.end, page, section)
-        yield Request(url=mblog_list_url, cookies=self.login_cookie, callback=self.parse_mblog_list, meta=params)
+        # query pid for user
+        for uid in self.uid_list:
+            sql = 'SELECT pid from "user" where uid=\'%s\';' % uid
+            pid = self.db.query(sql)[0][0]
+            params = {'page': 1, 'section': 1, 'pid': pid, 'start': self.start, 'end': self.end}
+            search_url = get_search_url(pid, self.start, self.end, 1, 1)
 
+            cookie = eval(self.entry_manager.get_random_entry()[2])
+            yield Request(url=search_url, cookies=cookie, callback=self.search_weibo, errback=self.save_search_url,
+                          meta=params)
 
-    def parse_mblog_list(self, response):
+    def save_search_url(self, response):
+        url = response.request.url
+        print('error request %s saved!' % url)
+        sql = 'INSERT INTO retry values(%s);'
+        self.db.execute_param(sql, (url,))
+
+    def search_weibo(self, response):
+
+        print(response.url)
         params = response.meta
+
+        print params
+
+        page = params['page']
+        section = params['section']
+        pid = params['pid']
+        start = params['start']
+        end = params['end']
+
         json_data = json.loads(response.body)
         html = json_data['data']
         sel = Selector(text=html)
 
-        # Get total number of mblog from first page, put it into meta
-        if params['page'] == 1 and params['section'] == 1:
+        # parse page
+        weibo_list = sel.xpath('//div[@action-type="feed_list_item"]').extract()
+        weibo_list = map(lambda div: parse_mblog_div(div), weibo_list)
+        print 'crawled %s weibo in page %s, section %s' % (len(weibo_list), page, section)
+
+        if len(weibo_list) == 0:
+            raise Exception('Empty list!')
+
+        for weibo in weibo_list:
+            (mid, uid, content, tm, repost_num, comment_num, like_num) = weibo
+            yield WeiboItem(mid=mid, uid=uid, content=content, tm=tm, repost_num=repost_num, comment_num=comment_num,
+                            like_num=like_num)
+
+        # Get total number of mblog from search result
+        if page == 1 and section == 1:
             total = int(sel.xpath('//em[@class="W_fb S_spetxt"]/text()').extract()[0].strip())
-            params['total'] = total
             print('Total number of mblogs searched is: %s' % total)
 
-        # Get number of mblog for current section, update meta name 'crawled'.
-        mblog_div_list = sel.xpath('//div[@action-type="feed_list_item"]').extract()
-        section_crawled = len(mblog_div_list)
-        print('Number of mblogs in page %s, section %s is: %s' % (params['page'], params['section'], section_crawled))
-        params['crawled'] += section_crawled
+            # number of pages left
+            num_page = total / 15
+            # print(num_page)
 
-        # Parse mblog divs and get mblog values.
-        mblog_value_list = map(lambda div: parse_mblog_div(div), mblog_div_list)
-        for mblog in mblog_value_list:
-            yield WeiboItem(mid=mblog[0], uid=mblog[1], content=mblog[2], tm=mblog[3], repost_num=mblog[4],
-                            comment_num=mblog[5], like_num=mblog[6])
-
-        # Check if has next page.
-        if section_crawled > 0 and params['crawled'] < params['total']:
-            if params['section'] < 3:
-                params['section'] += 1
-            else:
-                params['page'] += 1
-                params['section'] = 1
-            mblog_list_url = get_mbloglist_url(params['pid'], params['start'], params['end'], params['page'],
-                                               params['section'])
-
-            yield Request(url=mblog_list_url, cookies=self.login_cookie, callback=self.parse_mblog_list, meta=params)
-        else:
-            print('Total number of mblogs crawled is: %s' % params['crawled'])
+            for i in range(num_page):
+                if section < 3:
+                    section += 1
+                else:
+                    page += 1
+                    section = 1
+                search_url = get_search_url(pid, start, end, page, section)
+                cookie = eval(self.entry_manager.get_random_entry()[2])
+                params['page'] = page
+                params['section'] = section
+                yield Request(url=search_url, cookies=cookie, callback=self.search_weibo, errback=self.save_search_url,
+                              meta=params)
 
 
-def get_mbloglist_url(pid, start, end, page, section):
-    mbloglist_url = 'http://weibo.com/p/aj/v6/mblog/mbloglist?domain=100505&is_search=1&is_ori=1&is_pic=1&is_video=1&is_music=1&is_text=1&id=%s&start_time=%s&end_time=%s&page=%s&pre_page=%s&pagebar=%s'
+def get_search_url(pid, start, end, page, section):
+    search_url = 'http://weibo.com/p/aj/v6/mblog/mbloglist?domain=100505&is_search=1&is_ori=1&is_pic=1&is_video=1&is_music=1&is_text=1&id=%s&start_time=%s&end_time=%s&page=%s&pre_page=%s&pagebar=%s'
     if section == 1:
         (pre_page, page_bar) = (0, 0)
     elif section == 2:
         (pre_page, page_bar) = (page, 0)
     elif section == 3:
         (pre_page, page_bar) = (page, 1)
-    return mbloglist_url % (pid, start, end, page, pre_page, page_bar)
-
-
-def read_cookie(cookie_file):
-    cookie_jar = cookielib.LWPCookieJar(cookie_file)
-    cookie_jar.load(ignore_discard=True, ignore_expires=True)
-    cookie = dict()
-    for ck in cookie_jar:
-        cookie[ck.name] = ck.value
-    return cookie
+    return search_url % (pid, start, end, page, pre_page, page_bar)
 
 
 def parse_mblog_div(div):
@@ -107,21 +125,27 @@ def parse_mblog_div(div):
     uid = sel.xpath('//div[@action-type="feed_list_item"]/@tbinfo').extract()[0]
     content = sel.xpath('//div[@node-type="feed_list_content"]').extract()[0]
     tm = sel.xpath('//div[@class="WB_from S_txt2"]/a/@date').extract()[0]
-    repost_num = sel.xpath('//span[@node-type="forward_btn_text"]/text()').extract()[0]
-    comment_num = sel.xpath('//span[@node-type="comment_btn_text"]/text()').extract()[0]
-    like_num = sel.xpath('//span[@node-type="like_status"]/em/text()').extract()[0]
 
     uid = uid.split('=')[1]
     content = re.match(r'<div.*?>(.*)</div>', content.replace('\n', '')).group(1).strip()
     tm = datetime.fromtimestamp(long(tm) / 1000)
+
     try:
+        repost_num = sel.xpath('//span[@node-type="forward_btn_text"]/text()').extract()[0]
         repost_num = int(repost_num.split(' ')[-1])
     except:
         repost_num = 0
+
     try:
+        comment_num = sel.xpath('//span[@node-type="comment_btn_text"]/text()').extract()[0]
         comment_num = int(comment_num.split(' ')[-1])
     except:
         comment_num = 0
-    like_num = int(like_num)
+
+    try:
+        like_num = sel.xpath('//span[@node-type="like_status"]/em/text()').extract()[0]
+        like_num = int(like_num)
+    except:
+        like_num = 0
 
     return (mid, uid, content, tm, repost_num, comment_num, like_num)

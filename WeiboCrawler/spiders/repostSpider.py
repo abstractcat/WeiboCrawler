@@ -11,7 +11,6 @@ from scrapy.spider import Spider
 from scrapy.http import Request
 from scrapy import Selector
 
-from WeiboCrawler.items import WeiboItem
 from WeiboCrawler.items import RepostItem
 
 
@@ -33,7 +32,6 @@ class RepostSpider(Spider):
         params = {'mid': self.mid, 'page': page, 'crawled': crawled}
         repost_list_url = get_repostlist_url(self.mid, page)
         yield Request(url=repost_list_url, cookies=self.login_cookie, callback=self.parse_repost_list, meta=params)
-
 
     def parse_repost_list(self, response):
         params = response.meta

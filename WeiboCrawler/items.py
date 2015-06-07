@@ -28,3 +28,6 @@ class RepostItem(scrapy.Item):
     repost_num = scrapy.Field()
     comment_num = scrapy.Field()
     like_num = scrapy.Field()
+
+
+

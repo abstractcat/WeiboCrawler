@@ -7,11 +7,11 @@ from scrapy.crawler import Crawler
 from scrapy import log, signals
 from scrapy.utils.project import get_project_settings
 
-from WeiboCrawler.spiders.repostSpider import RepostSpider
+from WeiboCrawler.spiders import repostSpider
 
 
 def main():
-    spider = RepostSpider(mid='3843994771677415')
+    spider = repostSpider.RepostSpider(mid='3843994771677415')
 
     settings = get_project_settings()
     crawler = Crawler(settings)
