@@ -4,6 +4,7 @@ __author__ = 'abstractcat'
 
 import json
 import re
+import urlparse
 from datetime import datetime
 
 from scrapy.spider import Spider
@@ -17,18 +18,15 @@ from abstractcat.login import entry
 from WeiboCrawler.items import WeiboItem
 
 
-class WeiboSpider(Spider):
+class RetrySpider(Spider):
     '''
     Crawl weibo list for user given pid and time range.
     '''
-    name = "weibo"
+    name = "retry"
     allowed_domains = ['weibo.com', 'sina.com.cn']
 
-    def __init__(self, uid_list, start, end):
+    def __init__(self):
         self.db = postgres.PostgresConn()
-        self.uid_list = uid_list
-        self.start = start
-        self.end = end
         self.entry_manager = entry.EntryManager()
 
     def start_requests(self):
@@ -37,16 +35,32 @@ class WeiboSpider(Spider):
         :return:
         '''
 
-        # query pid for user
-        for uid in self.uid_list:
-            sql = 'SELECT pid from "user" where uid=\'%s\';' % uid
-            pid = self.db.query(sql)[0][0]
-            params = {'page': 1, 'section': 1, 'pid': pid, 'start': self.start, 'end': self.end}
-            search_url = get_search_url(pid, self.start, self.end, 1, 1)
+        sql = 'SELECT * from retry;'
+        sql_del='DELETE FROM retry WHERE url=\'%s\';'
+        urls = map(lambda x:x[0],self.db.query(sql))
+        for url in urls:
 
+            parsed_params = urlparse.parse_qs(url)
+            page = int(parsed_params['page'][0])
+            pid = parsed_params['id'][0]
+            start = parsed_params['start_time'][0]
+            end = parsed_params['end_time'][0]
+            pre_page = int(parsed_params['pre_page'][0])
+            page_bar = int(parsed_params['pagebar'][0])
+            if (pre_page, page_bar) == (0, 0):
+                section = 1
+            elif (pre_page, page_bar) == (page, 0):
+                section = 2
+            else:
+                section = 3
+
+            #delete from retry
+            self.db.execute(sql_del%url)
+
+            params = {'page': page, 'section': section, 'pid': pid, 'start': start, 'end': end}
+            search_url = get_search_url(pid, start, end, page, section)
             cookie = eval(self.entry_manager.get_random_entry()[2])
-            yield Request(url=search_url, cookies=cookie, callback=self.search_weibo, errback=self.save_search_url,
-                          meta=params)
+            yield Request(url=search_url, cookies=cookie, callback=self.search_weibo, errback=self.save_search_url, meta=params)
 
     def save_search_url(self, response):
         url = response.request.url
