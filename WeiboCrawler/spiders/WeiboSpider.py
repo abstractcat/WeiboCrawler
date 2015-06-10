@@ -7,9 +7,7 @@ import re
 from datetime import datetime
 
 from scrapy.spider import Spider
-
 from scrapy.http import Request
-
 from scrapy import Selector
 
 from abstractcat.db import postgres
@@ -51,8 +49,8 @@ class WeiboSpider(Spider):
     def save_search_url(self, response):
         url = response.request.url
         print('error request %s saved!' % url)
-        sql = 'INSERT INTO retry values(%s);'
-        self.db.execute_param(sql, (url,))
+        sql = 'INSERT INTO retry values(%s,%s);'
+        self.db.execute_param(sql, (url,1))
 
     def search_weibo(self, response):
 
@@ -67,7 +65,12 @@ class WeiboSpider(Spider):
         start = params['start']
         end = params['end']
 
-        json_data = json.loads(response.body)
+        try:
+            json_data = json.loads(response.body)
+        except:
+            self.save_search_url(response)
+            return
+
         html = json_data['data']
         sel = Selector(text=html)
 

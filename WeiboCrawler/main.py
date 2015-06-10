@@ -7,7 +7,7 @@ from scrapy.crawler import Crawler
 from scrapy import log, signals
 from scrapy.utils.project import get_project_settings
 
-from  WeiboCrawler.spiders import weiboSpider,retrySpider
+from  WeiboCrawler.spiders import weiboSpider, retrySpider
 
 
 def read_uid_list(path):
@@ -47,7 +47,8 @@ def run_retry_spider():
 
 
 def main():
-    run_retry_spider()
+    run_weibo_spider()
+    #run_retry_spider()
 
 
 if __name__ == '__main__':

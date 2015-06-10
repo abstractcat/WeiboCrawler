@@ -35,9 +35,9 @@ class RetrySpider(Spider):
         :return:
         '''
 
-        sql = 'SELECT * from retry;'
-        sql_del='DELETE FROM retry WHERE url=\'%s\';'
-        urls = map(lambda x:x[0],self.db.query(sql))
+        sql = 'SELECT * FROM retry WHERE type=1;'
+        sql_del = 'DELETE FROM retry WHERE url=\'%s\' AND type=1;'
+        urls = map(lambda x: x[0], self.db.query(sql))
         for url in urls:
 
             parsed_params = urlparse.parse_qs(url)
@@ -54,19 +54,21 @@ class RetrySpider(Spider):
             else:
                 section = 3
 
-            #delete from retry
-            self.db.execute(sql_del%url)
+            # delete from retry
+            self.db.execute(sql_del % url)
 
             params = {'page': page, 'section': section, 'pid': pid, 'start': start, 'end': end}
             search_url = get_search_url(pid, start, end, page, section)
             cookie = eval(self.entry_manager.get_random_entry()[2])
-            yield Request(url=search_url, cookies=cookie, callback=self.search_weibo, errback=self.save_search_url, meta=params)
+            yield Request(url=search_url, cookies=cookie, callback=self.search_weibo, errback=self.save_search_url,
+                          meta=params)
+
 
     def save_search_url(self, response):
         url = response.request.url
         print('error request %s saved!' % url)
-        sql = 'INSERT INTO retry values(%s);'
-        self.db.execute_param(sql, (url,))
+        sql = 'INSERT INTO retry values(%s,%s);'
+        self.db.execute_param(sql, (url,1))
 
     def search_weibo(self, response):
 
@@ -81,7 +83,12 @@ class RetrySpider(Spider):
         start = params['start']
         end = params['end']
 
-        json_data = json.loads(response.body)
+        try:
+            json_data = json.loads(response.body)
+        except:
+            self.save_search_url(response)
+            return
+
         html = json_data['data']
         sel = Selector(text=html)
 
